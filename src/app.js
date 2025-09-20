@@ -1,14 +1,24 @@
 const express = require("express")
+const bcrypt = require("bcrypt")
+
 const createDB = require("./Config/database")
 const UserModal = require("./Model/User")
-
+const { validateSignUpData } = require("./utils/validation")
 const app = express();
 
 app.use(express.json())
 
 app.post("/signup", async (req, res) => {
-    const user = new UserModal(req.body)
+    const { firstName, lastName, emailId, password } = req.body;
     try {
+        validateSignUpData(req.body)
+        const passwordHash = await bcrypt.hash(password, 10)
+        const user = new UserModal({
+            firstName,
+            lastName,
+            emailId,
+            password: passwordHash
+        })
         await user.save()
         res.send("User successfully saved!")
     } catch (err) {
@@ -16,7 +26,28 @@ app.post("/signup", async (req, res) => {
     }
 })
 
+app.post("/login", async (req, res) => {
+    const { emailId, password } = req.body;
+    try {
+        // First check if user is registered
+        const isUserRegistered = await UserModal.findOne({emailId})
+        if (!isUserRegistered) {
+            throw new Error("Invalid credentials")
+        }
+        // Check if password is correct
+        const isPasswordCorrect = await bcrypt.compare(password, isUserRegistered.password)
+        if (!isPasswordCorrect) {
+            throw new Error("Invalid credentials")
+        } else {
+            res.send("Logged in successfuly!")
+        }
+    } catch (err) {
+        res.status(400).send("ERROR: " + err.message)
+    }
+})
+
 app.patch("/user/:id", async (req, res) => {
+    // Dont allow user to update userId(id), so get it in params
     const userId = req.params.id
     const ALLOWED_UPDATES = ["lastName", "gender"]
     try {
@@ -27,12 +58,13 @@ app.patch("/user/:id", async (req, res) => {
             throw new Error("Update not allowed!")
         } else {
             await UserModal.findByIdAndUpdate("68ceb0cad60b00446d2e54cc", req.body, {
-                returnDocument: "after"
+                returnDocument: "after",
+                runValidators: true
             })
             res.send("User updated Successfully!")
         }
     } catch (err) {
-        res.status(400).send("Error -> " + err.message)
+        res.status(400).send("ERROR: " + err.message)
     }
 
 })
@@ -42,12 +74,12 @@ app.delete("/user/:id", async (req, res) => {
         await UserModal.findByIdAndDelete(req.params.id)
         res.send("User deleted successfully!")
     } catch (err) {
-        res.status(400).send("Error -> " + err.message)
+        res.status(400).send("ERROR: " + err.message)
     }
 })
 
 app.use((err, req, res, next) => {
-    console.log("Error -> ", err);
+    console.log("ERROR: ", err);
 })
 
 createDB()
