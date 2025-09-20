@@ -1,12 +1,25 @@
 const express = require("express")
 const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken")
+const cookieParser = require("cookie-parser")
 
 const createDB = require("./Config/database")
 const UserModal = require("./Model/User")
 const { validateSignUpData } = require("./utils/validation")
+const userAuth = require("./middlewares/auth")
 const app = express();
 
 app.use(express.json())
+app.use(cookieParser())
+
+app.get("/profile", userAuth, async (req, res) => {
+    try {
+        const user = req.user
+        res.send(user)
+    } catch (err) {
+        res.status(400).send("Error -> " + err.message)
+    }
+})
 
 app.post("/signup", async (req, res) => {
     const { firstName, lastName, emailId, password } = req.body;
@@ -30,7 +43,7 @@ app.post("/login", async (req, res) => {
     const { emailId, password } = req.body;
     try {
         // First check if user is registered
-        const isUserRegistered = await UserModal.findOne({emailId})
+        const isUserRegistered = await UserModal.findOne({ emailId })
         if (!isUserRegistered) {
             throw new Error("Invalid credentials")
         }
@@ -39,6 +52,9 @@ app.post("/login", async (req, res) => {
         if (!isPasswordCorrect) {
             throw new Error("Invalid credentials")
         } else {
+            const token = await jwt.sign({ _id: isUserRegistered._id }, "DEV@123", { expiresIn: "1d" });
+            // Expire cookie in 3 hours
+            res.cookie("token", token, { expires: new Date(Date.now() + 3 * 3600000) })
             res.send("Logged in successfuly!")
         }
     } catch (err) {
