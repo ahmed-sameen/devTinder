@@ -63,6 +63,9 @@ userSchema.methods.validatePassword = async function (InputPassword) {
     return isValidPassword;
 }
 
+// userSchema.index({ emailId: 1 })
+// no need to index emailId as uniqure property is already used
+
 const UserModal = mongoose.model("User", userSchema)
 
 module.exports = UserModal;
