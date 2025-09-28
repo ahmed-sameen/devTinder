@@ -1,5 +1,6 @@
 const express = require("express")
 const cookieParser = require("cookie-parser")
+const cors = require("cors")
 
 const createDB = require("./Config/database")
 const app = express();
@@ -10,6 +11,10 @@ const userRouter = require("./routes/userRouter");
 
 app.use(express.json())
 app.use(cookieParser())
+app.use(cors({
+    origin: "http://localhost:3000",
+    credentials: true
+}))
 
 
 app.use("/", authRouter)
