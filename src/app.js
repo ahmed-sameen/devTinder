@@ -5,14 +5,17 @@ const createDB = require("./Config/database")
 const app = express();
 const authRouter = require("./routes/authRouter")
 const profileRouter = require("./routes/profileRouter")
-const connectionRequestRouter = require("./routes/connectionRequestRouter")
+const connectionRequestRouter = require("./routes/connectionRequestRouter");
+const userRouter = require("./routes/userRouter");
 
 app.use(express.json())
 app.use(cookieParser())
 
+
 app.use("/", authRouter)
 app.use("/", profileRouter)
 app.use("/", connectionRequestRouter)
+app.use("/", userRouter)
 
 
 app.use((err, req, res, next) => {
