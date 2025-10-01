@@ -40,7 +40,7 @@ authRouter.post("/login", async (req, res) => {
             const token = await isUserRegistered.getJWT();
             // Expire cookie in 3 hours
             res.cookie("token", token, { expires: new Date(Date.now() + 3 * 3600000) })
-            res.send("Logged in successfuly!")
+            res.json(isUserRegistered)
         }
     } catch (err) {
         res.status(400).send("ERROR: " + err.message)

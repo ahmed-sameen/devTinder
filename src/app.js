@@ -1,6 +1,7 @@
 const express = require("express")
 const cookieParser = require("cookie-parser")
 const cors = require("cors")
+require("dotenv").config()
 
 const createDB = require("./Config/database")
 const app = express();
@@ -29,7 +30,7 @@ app.use((err, req, res, next) => {
 
 createDB()
     .then((res) => {
-        app.listen(9999, () => console.log("server listening on port 9999..."))
+        app.listen(process.env.PORT, () => console.log(`server listening on port ${process.env.PORT}...`))
     })
     .catch(err => console.log("Error in DB Connection"))
 

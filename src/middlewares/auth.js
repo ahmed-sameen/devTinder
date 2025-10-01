@@ -6,9 +6,9 @@ const userAuth = async (req, res, next) => {
     try {
         const { token } = req.cookies;
         if (!token) {
-            throw new Error("Token is not valid!!")
+            return res.status(401).send("Unauthorised!" )
         }
-        const extractCookieData = await jwt.verify(token, "DEV@123")
+        const extractCookieData = await jwt.verify(token, process.env.ECRYPT_KEY)
         const { _id } = extractCookieData;
         const user = await UserModal.findById(_id)
         if (!user) {

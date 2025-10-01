@@ -40,6 +40,12 @@ const userSchema = mongoose.Schema({
             }
         }
     },
+    photoUrl: {
+        type: String,
+        validate(value) {
+            if (!validator.isURL(value)) throw new Error("Invalid URl")
+        }
+    },
     skills: {
         type: [String]
     },
@@ -54,7 +60,7 @@ const userSchema = mongoose.Schema({
 
 userSchema.methods.getJWT = async function () {
     const isUserRegistered = this;
-    const token = await jwt.sign({ _id: isUserRegistered._id }, "DEV@123", { expiresIn: "1d" })
+    const token = await jwt.sign({ _id: isUserRegistered._id }, process.env.ECRYPT_KEY, { expiresIn: "1d" })
     return token;
 }
 

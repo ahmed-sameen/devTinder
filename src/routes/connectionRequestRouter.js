@@ -47,9 +47,15 @@ connectionRequestRouter.post("/request/review/:status/:requestId", userAuth, asy
             toUserId: loggedInUser._id,
             status: "interested"
         })
+        if (!connectionRequestValid) {
+            return res
+                .status(404)
+                .json({ message: "Connection request not found" });
+        }
+
         connectionRequestValid.status = status;
         await connectionRequestValid.save()
-        res.send("Connection request " + status+"!!")
+        res.send("Connection request " + status + "!!")
     } catch (err) {
         res.status(400).send("ERROR: " + err.message)
     }

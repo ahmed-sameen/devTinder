@@ -10,12 +10,13 @@ userRouter.get("/user/requests/received", userAuth, async (req, res) => {
         const connectionRequests = await ConnectionRequestModel.find({
             toUserId: loggedInUser._id,
             status: "interested"
-        }).populate("fromUserId", ["firstName", "lastName", "skills", "age", "gender"])
+        }).populate("fromUserId", ["firstName", "lastName", "skills", "age", "gender","_id","photoUrl"])
         if (!connectionRequests.length > 0) {
             return res.status(400).send("No connection requests found!")
         }
-        const filterOnlyfromData = connectionRequests.map(each => each.fromUserId)
-        res.json(filterOnlyfromData)
+        res.send(connectionRequests)
+        // const filterOnlyfromData = connectionRequests.map(each => each.fromUserId)
+        // res.json(filterOnlyfromData)
     } catch (err) {
         res.status(400).send("ERROR: " + err.message)
     }
@@ -29,8 +30,8 @@ userRouter.get("/user/connections", [userAuth], async (req, res) => {
                 { fromUserId: loggedInUser._id, status: "accepted" },
                 { toUserId: loggedInUser._id, status: "accepted" }
             ]
-        }).populate("fromUserId", ["firstName", "lastName", "skills", "age", "gender"])
-            .populate("toUserId", ["firstName", "lastName", "skills", "age", "gender"])
+        }).populate("fromUserId", ["firstName", "lastName", "skills", "age", "gender","photoUrl"])
+            .populate("toUserId", ["firstName", "lastName", "skills", "age", "gender","photoUrl"])
         const filteredConnections = allConnections.map(each => {
             if (each.fromUserId._id.toString() == loggedInUser._id.toString()) {
                 return each.toUserId
@@ -66,7 +67,7 @@ userRouter.get("/feed", userAuth, async (req, res) => {
                 { _id: { $nin: Array.from(filteredConnections) } },
                 { _id: { $ne: loggedInUser._id } }
             ]
-        }).select("firstName lastName age gender")
+        }).select("_id firstName lastName age gender photoUrl emailId")
             .skip(skip)
             .limit(limit)
         res.send(hideUserFromFeed)
